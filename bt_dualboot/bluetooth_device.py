@@ -1,33 +1,34 @@
+from typing import Literal
+
+
 class BluetoothDevice:
     """Representation of bluetooth device
 
     Properties:
-        klass (str)
         mac (str)
         name (str)
         pairing_key (str)
         adapter_mac (str)
+        device_class (str)
         source (str): kind of 'Windows', 'Linux'
 
     """
 
     def __init__(
         self,
-        mac=None,
-        name=None,
-        pairing_key=None,
-        adapter_mac=None,
-        device_class=None,
-        source=None,
+        mac: str,
+        pairing_key: str,
+        adapter_mac: str,
+        name: str | None = None,
+        device_class: str | None = None,
+        source: Literal["Windows", "Linux"] | None = None,
     ):
-        # fmt: off
-        self.source         = source
-        self.klass          = device_class
-        self.mac            = mac
-        self.name           = name
-        self.pairing_key    = pairing_key
-        self.adapter_mac    = adapter_mac
-        # fmt: on
+        self.source = source
+        self.klass = device_class
+        self.mac = mac
+        self.name = name
+        self.pairing_key = pairing_key
+        self.adapter_mac = adapter_mac
 
     def __repr__(self):
         source = "?"

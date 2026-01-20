@@ -1,5 +1,6 @@
-from .shared_fixtures import *
 from bt_dualboot.bt_windows.devices import *
+
+from .shared_fixtures import *
 
 #
 # NOTE: helper `wp()` imported from `tests.windows_registry.shared_fixtures`
@@ -15,7 +16,11 @@ def test_extract_adapter_mac():
     assert extract_adapter_mac(key) == "D4:6D:6D:97:62:9B"
 
 
-def test_get_devices(windows_registry, import_devices, test_scheme):
+def test_get_devices(
+    windows_registry: WindowsRegistry,
+    import_devices: None,
+    test_scheme: dict[str, dict[str, str]],
+):
     devices = get_devices(windows_registry)
 
     for device in devices:
@@ -23,7 +28,7 @@ def test_get_devices(windows_registry, import_devices, test_scheme):
         assert device.pairing_key == test_scheme[device.adapter_mac][device.mac]
 
 
-def test_get_devices__source(windows_registry, import_devices):
+def test_get_devices__source(windows_registry: WindowsRegistry, import_devices: None):
     devices = get_devices(windows_registry)
     for device in devices:
         assert device.is_source_windows()

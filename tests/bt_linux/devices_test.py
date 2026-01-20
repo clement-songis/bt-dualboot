@@ -1,8 +1,9 @@
-from unittest.mock import patch
 import os
+from unittest.mock import patch
+
+from bt_dualboot.bt_linux.devices import *
 
 from .shared_fixtures import *
-from bt_dualboot.bt_linux.devices import *
 
 
 @patch("bt_dualboot.bt_linux.devices.LINUX_BT_DIR", bt_linux_sample_01_unwrapped())
@@ -12,14 +13,15 @@ class TestDevices:
         adapters = get_adapters_macs()
         assert sorted(adapters) == sorted(expected)
 
-    def test_get_adapters_paths(self, bt_linux_sample_01):
+    def test_get_adapters_paths(self, bt_linux_sample_01: str):
         expected = [
-            os.path.join(bt_linux_sample_01, mac) for mac in ["A4:6B:6C:9D:E2:FB", "B4:6B:6C:9D:E2:FB"]
+            os.path.join(bt_linux_sample_01, mac)
+            for mac in ["A4:6B:6C:9D:E2:FB", "B4:6B:6C:9D:E2:FB"]
         ]
         adapters = get_adapters_paths()
         assert sorted(adapters) == sorted(expected)
 
-    def test_get_devices_paths(self, bt_linux_sample_01):
+    def test_get_devices_paths(self, bt_linux_sample_01: str):
         sample_list = [
             "A4:6B:6C:9D:E2:FB/A4:BF:C6:D0:E5:FF",
             "A4:6B:6C:9D:E2:FB/B6:C2:D3:E5:F2:0D",
@@ -31,7 +33,8 @@ class TestDevices:
         ]
 
         expected = [
-            os.path.join(bt_linux_sample_01, adapter_device, "info") for adapter_device in sample_list
+            os.path.join(bt_linux_sample_01, adapter_device, "info")
+            for adapter_device in sample_list
         ]
         actual = get_devices_paths()
         assert sorted(expected) == sorted(actual)

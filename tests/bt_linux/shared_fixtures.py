@@ -1,5 +1,7 @@
-from pytest import fixture
 import os
+
+from pytest import fixture
+
 from tests.helpers import pytest_unwrap
 
 #
@@ -18,5 +20,5 @@ def bt_linux_samples_dir():
 
 
 @fixture
-def bt_linux_sample_01(bt_linux_samples_dir):
+def bt_linux_sample_01(bt_linux_samples_dir: str):
     return os.path.join(bt_linux_samples_dir, "bt_sample_01")

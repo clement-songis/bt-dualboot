@@ -1,7 +1,7 @@
 import re
 
 
-def hex_string_to_pairs(hex_string):
+def hex_string_to_pairs(hex_string: str):
     """Convert hex string to pairs array
     Args:
         hex_string (str): kind of 'D51FFA421C4C'
@@ -17,7 +17,7 @@ def hex_string_to_pairs(hex_string):
 
     pairs_count = int(buf_len / 2)
 
-    pairs = []
+    pairs: list[str] = []
     for i in range(pairs_count):
         start = i * 2
         end = start + 2
@@ -26,7 +26,7 @@ def hex_string_to_pairs(hex_string):
     return pairs
 
 
-def is_mac_reg_key(value):
+def is_mac_reg_key(value: str):
     """Check is value is valid MAC reg key
     Args:
         value (str): kind of 'd51ffa421c4c' or '"d51ffa421c4c"' or 'MasterIRK' or '"MasterIRK"'
@@ -35,10 +35,10 @@ def is_mac_reg_key(value):
         str: kind of 'D5:1F:FA:42:1C:4C'
     """
 
-    return re.match("^[a-f0-9]{12}$", _unquote(value)) is not None
+    return re.match("^[a-f0-9]{12}$", __unquote(value)) is not None
 
 
-def mac_from_reg_key(mac_key):
+def mac_from_reg_key(mac_key: str):
     """Convert device MAC from Windows registry key format to regular
     Args:
         mac_key (str): kind of 'd51ffa421c4c' or '"d51ffa421c4c"'
@@ -47,10 +47,10 @@ def mac_from_reg_key(mac_key):
         str: kind of 'D5:1F:FA:42:1C:4C'
     """
 
-    return ":".join(hex_string_to_pairs(_unquote(mac_key).upper()))
+    return ":".join(hex_string_to_pairs(__unquote(mac_key).upper()))
 
 
-def mac_to_reg_key(mac):
+def mac_to_reg_key(mac: str):
     """Convert device MAC to Windows registry key format
     Args:
         mac (str): kind of 'D5:1F:FA:42:1C:4C'
@@ -62,7 +62,7 @@ def mac_to_reg_key(mac):
     return "".join(mac.split(":")).lower()
 
 
-def hex_string_from_reg(hex_string_reg):
+def hex_string_from_reg(hex_string_reg: str):
     """Convert hex string from Windows registry format
     Args:
         hex_string_reg (str): kind of 'hex:a6,1b,7f,1b,d9,a3,5f,3c,f7,e6,75,ef,21,61,a8,36'
@@ -75,10 +75,10 @@ def hex_string_from_reg(hex_string_reg):
     return "".join(value.split(",")).upper()
 
 
-def hex_string_to_reg_value(hex_string):
+def hex_string_to_reg_value(hex_string: str):
     """Convert hex string to Windows registry value
     Args:
-        hex_string_reg (str): kind of 'A61B7F1BD9A35F3CF7E675EF2161A836'
+        hex_string (str): kind of 'A61B7F1BD9A35F3CF7E675EF2161A836'
 
     Returns:
         str: kind of 'hex:a6,1b,7f,1b,d9,a3,5f,3c,f7,e6,75,ef,21,61,a8,36'
@@ -88,7 +88,7 @@ def hex_string_to_reg_value(hex_string):
     return f"hex:{value}"
 
 
-def _unquote(value):
+def __unquote(value: str):
     """unquote value is quoted
     Args:
         value (str): kind of 'd51ffa421c4c' or '"d51ffa421c4c"'

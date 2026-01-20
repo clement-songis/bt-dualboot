@@ -1,5 +1,6 @@
-from bt_dualboot.bt_linux.bluetooth_device_factory import *
 import os
+
+from bt_dualboot.bt_linux.bluetooth_device_factory import *
 
 SAMPLES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_samples")
 SMPL_BT_SAMPLE_01 = os.path.join(SAMPLES_DIR, "bt_sample_01")
@@ -25,10 +26,9 @@ def test_extract_info():
 def test_bluetooth_device_factory():
     device = bluetooth_device_factory(SAMPLE_DEVICE_INFO_PATH)
 
-    # fmt: off
-    assert device.__class__.__name__    == "BluetoothDevice"
-    assert device.klass                 == "0x000540"
-    assert device.mac                   == "B6:C2:D3:E5:F2:0D"
-    assert device.name                  == "DEV-1-02-Name"
-    assert device.pairing_key           == "A515CBE4E8F2E236FF999C0A53369EF6"
-    # fmt: on
+    assert device is not None
+    assert device.__class__.__name__ == "BluetoothDevice"
+    assert device.klass == "0x000540"
+    assert device.mac == "B6:C2:D3:E5:F2:0D"
+    assert device.name == "DEV-1-02-Name"
+    assert device.pairing_key == "A515CBE4E8F2E236FF999C0A53369EF6"

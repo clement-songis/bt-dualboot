@@ -1,5 +1,6 @@
-from pytest import fixture
 import os
+
+from pytest import fixture
 
 from .shared_fixtures import *
 
@@ -13,17 +14,19 @@ class TestExport:
     sample_reg_key = r"ControlSet001\Control\Bluetooth\Audio\Hfp"
 
     @fixture
-    def export_sample(self, windows_registry_samples_dir):
-        with open(os.path.join(windows_registry_samples_dir, self.sample_reg_filename), "r") as f:
+    def export_sample(self, windows_registry_samples_dir: str):
+        with open(
+            os.path.join(windows_registry_samples_dir, self.sample_reg_filename), "r"
+        ) as f:
             sample = f.read()
 
         return sample
 
-    def test_export(self, export_sample, windows_registry):
+    def test_export(self, export_sample: str, windows_registry: WindowsRegistry):
         exported_data = windows_registry.export(self.sample_reg_key)
         assert exported_data == export_sample
 
-    def test_configparser_compatible(self, windows_registry):
+    def test_configparser_compatible(self, windows_registry: WindowsRegistry):
         reg_data = windows_registry.export_as_config(self.sample_reg_key)
 
         key = wp(r"ControlSet001\Control\Bluetooth\Audio\Hfp\HandsFree")
@@ -36,8 +39,7 @@ class TestExport:
 class TestImport:
     sample_reg_key = r"ControlSet001\Control\Bluetooth\Audio\Hfp"
 
-    def test_import_unsafe(self, windows_registry):
-        # fmt: off
+    def test_import_unsafe(self, windows_registry: WindowsRegistry):
         for_import = {
             wp(r"ControlSet001\Control\Bluetooth\Audio\Hfp\HandsFree"): {
                 '"Custom"': "dword:00000120"
@@ -46,7 +48,6 @@ class TestImport:
                 '"CustomSub"': "dword:00000121"
             },
         }
-        # fmt: on
 
         windows_registry.import_dict(for_import, safe=False)
 
@@ -62,10 +63,17 @@ class TestImport:
         key = wp(r"ControlSet001\Control\Bluetooth\Audio\Hfp\HandsFree\Sub")
         assert reg_data.get(key, '"CustomSub"') == "dword:00000121", "new section added"
 
-    def test_import_safe(self, windows_registry, sample_reg_file_path, registry_file_path):
+    def test_import_safe(
+        self,
+        windows_registry: WindowsRegistry,
+        sample_reg_file_path: str,
+        registry_file_path: str,
+    ):
         new_value = "dword:00000207"
         for_import = {
-            wp(r"ControlSet001\Control\Bluetooth\Audio\Hfp\HandsFree"): {'"ProfileVersion"': new_value}
+            wp(r"ControlSet001\Control\Bluetooth\Audio\Hfp\HandsFree"): {
+                '"ProfileVersion"': new_value
+            }
         }
 
         windows_registry.import_dict(for_import, safe=True)
@@ -73,7 +81,9 @@ class TestImport:
 
         key = wp(r"ControlSet001\Control\Bluetooth\Audio\Hfp\HandsFree")
 
-        assert reg_data.get(key, '"ProfileVersion"') == new_value, "existing values updated"
+        assert (
+            reg_data.get(key, '"ProfileVersion"') == new_value
+        ), "existing values updated"
 
         assert os.path.getsize(sample_reg_file_path) == os.path.getsize(
             registry_file_path

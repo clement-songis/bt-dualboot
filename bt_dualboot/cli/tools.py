@@ -1,9 +1,11 @@
 import os
-import sys
 import shutil
+import sys
 from itertools import repeat
-from bt_dualboot.win_mount import locate_windows_mount_points
+
+from bt_dualboot.bluetooth_device import BluetoothDevice
 from bt_dualboot.bt_linux.devices import LINUX_BT_DIR, get_devices_paths
+from bt_dualboot.win_mount import locate_windows_mount_points
 
 
 def is_debug():
@@ -14,7 +16,7 @@ def is_linux():
     return sys.platform.find("linux") == 0
 
 
-def invariant_and_halt(condition, error_message):
+def invariant_and_halt(condition: bool, error_message: str):
     if condition:
         raise SystemExit("ERROR: {}".format(error_message))
 
@@ -42,7 +44,7 @@ def require_chntpw_package():
     )
 
 
-def require_univocal_windows_location(user_selected_location):
+def require_univocal_windows_location(user_selected_location: str | None):
     """
     Raises:
         SystemExit: when no Windows location found or locations is ambigous
@@ -62,7 +64,7 @@ def require_univocal_windows_location(user_selected_location):
     )
 
 
-def print_header(caption):
+def print_header(caption: str):
     """
     Prints:
         Underlined header
@@ -73,7 +75,14 @@ def print_header(caption):
     print("".join(repeat("=", len(caption))))
 
 
-def print_devices_list(section_id, caption, devices, annotation=None, message_not_found=None, bot=False):
+def print_devices_list(
+    section_id: str,
+    caption: str,
+    devices: list[BluetoothDevice],
+    annotation: str | None = None,
+    message_not_found: str | None = None,
+    bot: bool = False,
+):
     """Prints devices list with caption and annotation or not found fallaback message
 
     Args:
@@ -84,7 +93,7 @@ def print_devices_list(section_id, caption, devices, annotation=None, message_no
         message_not_found (str) [optional]
         bot (bool): format parsable output for robots
     """
-    any_device = devices is not None and len(devices) > 0
+    any_device = len(devices) > 0
 
     if bot is True:
         if any_device:

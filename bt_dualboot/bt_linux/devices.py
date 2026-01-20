@@ -1,5 +1,8 @@
-import os
 import glob
+import os
+
+from bt_dualboot.bluetooth_device import BluetoothDevice
+
 from .bluetooth_device_factory import bluetooth_device_factory
 
 LINUX_BT_DIR = "/var/lib/bluetooth"
@@ -20,7 +23,9 @@ def get_adapters_paths():
     Returns:
         list<str>: kind of ['/var/lib/bluetooths/A4:6B:6C:9D:E2:FB', ...]
     """
-    return [os.path.join(LINUX_BT_DIR, dir_name) for dir_name in os.listdir(LINUX_BT_DIR)]
+    return [
+        os.path.join(LINUX_BT_DIR, dir_name) for dir_name in os.listdir(LINUX_BT_DIR)
+    ]
 
 
 def get_devices_paths():
@@ -37,4 +42,11 @@ def get_devices():
     Returns:
         list<BluetoothDevice>: linux registred bluetooths devices
     """
-    return [bluetooth_device_factory(device_path) for device_path in get_devices_paths()]
+    devices: list[BluetoothDevice] = []
+
+    for path in get_devices_paths():
+        device = bluetooth_device_factory(path)
+        if device is not None:
+            devices.append(device)
+
+    return devices

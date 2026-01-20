@@ -1,6 +1,8 @@
-from pytest import fixture
 import os
 import shutil
+from pathlib import Path
+
+from pytest import TempPathFactory, fixture
 
 from bt_dualboot.windows_registry import WindowsRegistry
 
@@ -13,12 +15,12 @@ def windows_registry_samples_dir():
 
 
 @fixture
-def tmpdir(tmp_path_factory):
+def tmpdir(tmp_path_factory: TempPathFactory):
     return tmp_path_factory.mktemp("windows_registry")
 
 
 @fixture
-def sample_reg_file_path(windows_registry_samples_dir):
+def sample_reg_file_path(windows_registry_samples_dir: str):
     """
     Windows/System32/config/SYSTEM snapshot from fresh-installed Windows 10
     """
@@ -26,7 +28,7 @@ def sample_reg_file_path(windows_registry_samples_dir):
 
 
 @fixture
-def registry_file_path(sample_reg_file_path, tmpdir):
+def registry_file_path(sample_reg_file_path: str, tmpdir: Path):
     """
     Making working copy of SYSTEM Hive file
     """
@@ -38,5 +40,5 @@ def registry_file_path(sample_reg_file_path, tmpdir):
 
 
 @fixture
-def windows_registry(registry_file_path):
+def windows_registry(registry_file_path: str):
     return WindowsRegistry(registry_file_path)

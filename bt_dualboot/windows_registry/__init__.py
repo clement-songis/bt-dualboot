@@ -1,1 +1,1 @@
-from .windows_registry import WindowsRegistry, WINDOWS10_REGISTRY_PATH  # noqa: F401
+from .windows_registry import WINDOWS10_REGISTRY_PATH, WindowsRegistry  # type: ignore

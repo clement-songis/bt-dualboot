@@ -1,10 +1,10 @@
-from configparser import ConfigParser
-from tempfile import TemporaryDirectory
-import subprocess
 import os
 import shutil
+import subprocess
+from configparser import ConfigParser
 from datetime import datetime
-
+from tempfile import TemporaryDirectory
+from typing import Literal
 
 WINDOWS10_REGISTRY_PATH = os.path.join("Windows", "System32", "config", "SYSTEM")
 
@@ -13,16 +13,11 @@ def is_debug():
     return os.environ.get("DEBUG") == "1"
 
 
-def subprocess_output_opts():
+def subprocess_output_opts() -> dict[Literal["stdout", "stderr"], int]:
     if is_debug():
         return {}
     else:
-        # fmt: off
-        return {
-            "stdout": subprocess.DEVNULL,
-            "stderr": subprocess.DEVNULL
-        }
-        # fmt: on
+        return {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
 
 
 class WindowsRegistry:
@@ -32,9 +27,9 @@ class WindowsRegistry:
 
     def __init__(
         self,
-        registry_file_path=None,
-        windows_path=None,
-        relative_registry_path=WINDOWS10_REGISTRY_PATH,
+        registry_file_path: str | None = None,
+        windows_path: str | None = None,
+        relative_registry_path: str = WINDOWS10_REGISTRY_PATH,
     ):
         """
         Args:
@@ -47,9 +42,13 @@ class WindowsRegistry:
             relative_registry_path (str): path to `Windows/System32/config/SYSTEM`
                 @see_also `registry_file_path`
         """
-        self.registry_file_path = registry_file_path
-        self.windows_path = windows_path
-        self.relative_registry_path = relative_registry_path
+
+        if registry_file_path is None:
+            assert windows_path is not None
+
+            self.registry_file_path = os.path.join(windows_path, relative_registry_path)
+        else:
+            self.registry_file_path = registry_file_path
 
         self._bt_keys_rpath = r"ControlSet001\Services\BTHPORT\Parameters\Keys"
 
@@ -62,20 +61,14 @@ class WindowsRegistry:
         return "PYTHONCHNTPWEXCHANGE"
 
     @classmethod
-    def with_prefix(cls, key):
+    def with_prefix(cls, key: str):
         return cls.exchange_prefix() + "\\" + key
 
     @classmethod
     def reg_file_signature(cls):
         return "Windows Registry Editor Version 5.00" ""
 
-    def _registry_file(self):
-        if self.registry_file_path is not None:
-            return self.registry_file_path
-
-        return os.path.join(self.windows_path, self.relative_registry_path)
-
-    def export(self, reg_key):
+    def export(self, reg_key: str):
         """Exports given registry key as text
         Args:
             reg_key (str): key for export
@@ -91,7 +84,7 @@ class WindowsRegistry:
             export_cmd = [
                 "reged",
                 "-x",
-                self._registry_file(),
+                self.registry_file_path,
                 self.exchange_prefix(),
                 reg_key,
                 exported_reg_filename,
@@ -108,7 +101,7 @@ class WindowsRegistry:
 
         return exported_text
 
-    def backup(self, backup_path, dry_run):
+    def backup(self, backup_path: str, dry_run: bool):
         """Backups Hive file to given path
 
         Args:
@@ -118,19 +111,18 @@ class WindowsRegistry:
         Returns:
             (str, str): backup_file_path, target_file_path
         """
-        target_file_path = self._registry_file()
         timestamp = datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
-        reg_filename = target_file_path.split(os.sep)[-1]
+        reg_filename = self.registry_file_path.split(os.sep)[-1]
         backup_filename = f"{reg_filename}-{timestamp}"
         backup_file_path = os.path.join(backup_path, backup_filename)
 
         if dry_run is not True:
             os.makedirs(backup_path, exist_ok=True)
-            shutil.copy(target_file_path, backup_file_path)
+            shutil.copy(self.registry_file_path, backup_file_path)
 
-        return backup_file_path, target_file_path
+        return backup_file_path, self.registry_file_path
 
-    def export_as_config(self, reg_key):
+    def export_as_config(self, reg_key: str):
         """Exports given registry key as `ConfigParser` instance
         Args:
             reg_key (str): key for export
@@ -144,7 +136,12 @@ class WindowsRegistry:
         reg_data.read_string(self.export(reg_key))
         return reg_data
 
-    def import_dict(self, data_dict, safe=True, auto_prefix=True):
+    def import_dict(
+        self,
+        data_dict: dict[str, dict[str, str]],
+        safe: bool = True,
+        auto_prefix: bool = True,
+    ):
         """Imports given dict into Windows registry
         Args:
             data_dict (dict):       data for import
@@ -166,7 +163,9 @@ class WindowsRegistry:
                         and reg_section_key[0] != "\\"
                         and reg_section_key.find(self.exchange_prefix()) < 0
                     ):
-                        reg_section_key = self.exchange_prefix() + "\\" + reg_section_key
+                        reg_section_key = (
+                            self.exchange_prefix() + "\\" + reg_section_key
+                        )
 
                     print(file=f)
                     print(f"[{reg_section_key}]", file=f)
@@ -185,7 +184,7 @@ class WindowsRegistry:
                 *safe_args,
                 "-I",
                 "-C",
-                self._registry_file(),
+                self.registry_file_path,
                 self.exchange_prefix(),
                 tmp_filename,
             ]

@@ -1,11 +1,14 @@
 import re
-from .convert import mac_from_reg_key, hex_string_from_reg, is_mac_reg_key
+
 from bt_dualboot.bluetooth_device import BluetoothDevice
+from bt_dualboot.windows_registry.windows_registry import WindowsRegistry
+
+from .convert import hex_string_from_reg, is_mac_reg_key, mac_from_reg_key
 
 REG_KEY__BLUETOOTH_PAIRING_KEYS = r"ControlSet001\Services\BTHPORT\Parameters\Keys"
 
 
-def extract_adapter_mac(from_section_key):
+def extract_adapter_mac(from_section_key: str):
     """Extracts adapter MAC from section key
     Args:
         from_section_key (str): kind of 'ControlSet001\\Services\\BTHPORT\\Parameters\\Keys\\d46d6d97629b'
@@ -21,7 +24,7 @@ def extract_adapter_mac(from_section_key):
     return mac_from_reg_key(res.groups()[0])
 
 
-def get_devices(windows_registry):
+def get_devices(windows_registry: WindowsRegistry):
     """Returns all BluetoothDevice instances from windows registry
     Args:
         windows_registry (WindowsRegistry): instance used for export data
@@ -33,7 +36,7 @@ def get_devices(windows_registry):
 
     reg_data = windows_registry.export_as_config(REG_KEY__BLUETOOTH_PAIRING_KEYS)
 
-    bluetooth_devices = []
+    bluetooth_devices: list[BluetoothDevice] = []
     for section_key in reg_data.keys():
         adapter_mac = extract_adapter_mac(section_key)
         if adapter_mac is None:
@@ -46,10 +49,10 @@ def get_devices(windows_registry):
 
             bluetooth_devices.append(
                 BluetoothDevice(
-                    source=BluetoothDevice.source_windows(),
                     mac=mac_from_reg_key(device_mac_raw),
-                    adapter_mac=adapter_mac,
                     pairing_key=hex_string_from_reg(pairing_key_raw),
+                    adapter_mac=adapter_mac,
+                    source=BluetoothDevice.source_windows(),
                 )
             )
 
