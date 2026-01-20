@@ -2,7 +2,7 @@
 name = "bt-dualboot"
 version = "1.0.1"
 description = "Sync Bluetooth for dualboot Linux and Windows"
-keywords = [ "bluetooth", "dualboot", "sync", "pairing", "keys" ]
+keywords = ["bluetooth", "dualboot", "sync", "pairing", "keys"]
 authors = ["Konstantin Ivanov <KEIvanov@gmail.com>"]
 readme = "README.md"
 homepage = "https://github.com/x2es/bt-dualboot.git"
@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
@@ -36,6 +36,7 @@ autopep8 = "^1.6.0"
 flake8 = "^4.0.1"
 
 [tool.poetry.scripts]
+poetry = "poetry.console.application:main"
 bt-dualboot = "bt_dualboot.cli.app:main"
 
 [build-system]
