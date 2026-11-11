@@ -4,10 +4,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    poetry2nix = {
-      url = "github:nix-community/poetry2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
@@ -15,28 +11,33 @@
       self,
       nixpkgs,
       flake-utils,
-      poetry2nix,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = import nixpkgs { inherit system; };
-        inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication overrides;
+        python = pkgs.python3;
+        pyproject = (pkgs.lib.importTOML ./pyproject.toml).tool.poetry;
 
-        systemDeps = with pkgs; [
-          chntpw
-        ];
+        package = python.pkgs.buildPythonApplication {
+          pname = pyproject.name;
+          inherit (pyproject) version;
+          pyproject = true;
+          src = ./.;
 
-        package = mkPoetryApplication {
-          projectDir = ./.;
-          overrides = overrides.withDefaults (
-            final: prev: {
-              libfaketime = prev.libfaketime.overridePythonAttrs (old: {
-                buildInputs = (old.buildInputs or [ ]) ++ [ prev.setuptools ];
-              });
-            }
-          );
-          propagatedBuildInputs = systemDeps;
+          build-system = [ python.pkgs.poetry-core ];
+
+          # Runtime system dependency (Windows registry access)
+          propagatedBuildInputs = [ pkgs.chntpw ];
+
+          pythonImportsCheck = [ "bt_dualboot" ];
+
+          meta = {
+            inherit (pyproject) description homepage;
+            license = pkgs.lib.licenses.mit;
+            mainProgram = "bt-dualboot";
+            platforms = pkgs.lib.platforms.linux;
+          };
         };
       in
       {
@@ -45,16 +46,25 @@
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [ package ];
-          buildInputs = with pkgs; [
-            # poetry
-            docker
-            docker-compose
+          packages = [
+            (python.withPackages (
+              ps: with ps; [
+                pytest
+                pytest-watch
+                pytest-snapshot
+                black
+                autopep8
+                flake8
+              ]
+            ))
+            pkgs.docker
+            pkgs.docker-compose
           ];
         };
 
         apps.default = {
           type = "app";
-          program = "${package}/bin/bt-dualboot";
+          program = pkgs.lib.getExe package;
         };
       }
     );
